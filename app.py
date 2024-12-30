@@ -1,13 +1,13 @@
-
 from flask import Flask, request, jsonify
 import joblib
 import pandas as pd
+import numpy as np
 
 # Khởi tạo Flask app
 app = Flask(__name__)
 
 # Đường dẫn đến file mô hình
-MODEL_PATH = "lgbm"  # Thay bằng đường dẫn chính xác đến mô hình trên Drive
+MODEL_PATH = "lgbm"  # Thay bằng đường dẫn chính xác đến mô hình trên GitHub hoặc hệ thống
 
 # Load mô hình
 try:
@@ -16,6 +16,17 @@ try:
 except Exception as e:
     print(f"Error loading model: {e}")
     model = None
+
+# Hàm chuyển đổi dữ liệu thành kiểu JSON serializable
+def convert_to_serializable(data):
+    if isinstance(data, np.ndarray):  # Nếu là NumPy array
+        return data.astype(float).tolist()
+    elif isinstance(data, pd.DataFrame):  # Nếu là Pandas DataFrame
+        return data.astype(float).to_dict(orient="records")
+    elif isinstance(data, (np.float64, np.int64)):  # Nếu là kiểu số NumPy
+        return float(data) if isinstance(data, np.float64) else int(data)
+    else:
+        return data  # Nếu đã là kiểu serializable
 
 # Định nghĩa API để dự đoán
 @app.route('/predict', methods=['POST'])
@@ -32,11 +43,16 @@ def predict():
         # Chuyển dữ liệu thành DataFrame
         input_data = pd.DataFrame([data])
 
+        # Chuyển đổi tất cả cột trong DataFrame thành kiểu dữ liệu serializable
+        input_data = input_data.astype(float)
+
         # Thực hiện dự đoán
         prediction = model.predict(input_data)
 
-        # Trả kết quả về dạng JSON
-        return jsonify({'prediction': prediction[0]})
+        # Chuyển kết quả dự đoán sang kiểu JSON serializable
+        response = {'prediction': convert_to_serializable(prediction[0])}
+
+        return jsonify(response)
     except Exception as e:
         return jsonify({'error': str(e)})
 
