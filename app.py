@@ -8,7 +8,7 @@ import numpy as np
 app = Flask(__name__)
 
 # Đường dẫn đến file mô hình
-MODEL_PATH = "lgbm_model.pkl"  # Thay bằng đường dẫn thực tế đến file mô hình của bạn
+MODEL_PATH = "lgbm"  # Thay bằng đường dẫn thực tế đến file mô hình của bạn
 
 # Load mô hình
 try:
