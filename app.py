@@ -17,16 +17,16 @@ except Exception as e:
     print(f"Error loading model: {e}")
     model = None
 
-# Hàm chuyển đổi dữ liệu thành kiểu JSON serializable
-def convert_to_serializable(data):
-    if isinstance(data, np.ndarray):  # Nếu là NumPy array
-        return data.astype(float).tolist()
-    elif isinstance(data, pd.DataFrame):  # Nếu là Pandas DataFrame
-        return data.astype(float).to_dict(orient="records")
-    elif isinstance(data, (np.float64, np.int64)):  # Nếu là kiểu số NumPy
-        return float(data) if isinstance(data, np.float64) else int(data)
-    else:
-        return data  # Nếu đã là kiểu serializable
+# Hàm mã hóa dữ liệu categorical
+def preprocess_input(input_data):
+    # Ví dụ: mã hóa cột 'Gender' thành số (1: Male, 0: Female)
+    if 'Gender' in input_data.columns:
+        input_data['Gender'] = input_data['Gender'].map({'Male': 1, 'Female': 0})
+    
+    # Kiểm tra và mã hóa các cột categorical khác nếu cần
+    # Thêm mã hóa tùy thuộc vào đặc trưng của dữ liệu bạn sử dụng
+
+    return input_data
 
 # Định nghĩa API để dự đoán
 @app.route('/predict', methods=['POST'])
@@ -43,16 +43,17 @@ def predict():
         # Chuyển dữ liệu thành DataFrame
         input_data = pd.DataFrame([data])
 
+        # Tiền xử lý dữ liệu (mã hóa các cột categorical)
+        input_data = preprocess_input(input_data)
+
         # Chuyển đổi tất cả cột trong DataFrame thành kiểu dữ liệu serializable
         input_data = input_data.astype(float)
 
         # Thực hiện dự đoán
         prediction = model.predict(input_data)
 
-        # Chuyển kết quả dự đoán sang kiểu JSON serializable
-        response = {'prediction': convert_to_serializable(prediction[0])}
-
-        return jsonify(response)
+        # Trả kết quả dự đoán
+        return jsonify({'prediction': prediction[0]})
     except Exception as e:
         return jsonify({'error': str(e)})
 
