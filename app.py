@@ -1,4 +1,4 @@
-
+!pip install flask-ngrok
 from flask import Flask, request, jsonify
 import joblib
 import pandas as pd
