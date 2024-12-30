@@ -7,7 +7,7 @@ import pandas as pd
 app = Flask(__name__)
 
 # Đường dẫn đến file mô hình
-MODEL_PATH = "/content/drive/My Drive/lgbm"  # Thay bằng đường dẫn chính xác đến mô hình trên Drive
+MODEL_PATH = "lgbm"  # Thay bằng đường dẫn chính xác đến mô hình trên Drive
 
 # Load mô hình
 try:
